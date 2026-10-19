@@ -1,133 +1,189 @@
-# 🎮 Virtual Drive — Minimal Hand-Controlled Racing Wheel
+# Virtual Racing Wheel 🏎️
 
-A webcam-powered racing controller with a refreshed, minimalist live dashboard. The original control flow and project structure are preserved.
+**Turn your hands into a racing controller.**
 
-Control any car game using your hands as a steering wheel — no hardware needed. Just your webcam.
+Virtual Racing Wheel is a computer-vision project that transforms a webcam into a hands-free racing input system. Using Python, OpenCV, and MediaPipe, it tracks hand movements and gestures to translate physical motion into keyboard controls for racing games.
 
----
-
-## How It Works
-
-Hold both fists toward the camera like you're gripping a steering wheel. Tilt your hands to steer. Open your hands flat to brake.
-
-### Gestures
-
-| Gesture | Action | Key |
-|---------|--------|-----|
-| 👊 Both fists, hands level | Accelerate | ↑ UP |
-| 👊 Both fists, tilt LEFT | Accelerate + steer left | ↑ + ← |
-| 👊 Both fists, tilt RIGHT | Accelerate + steer right | ↑ + → |
-| 🖐 Both hands open, level | Brake | ↓ DOWN |
-| 🖐 Both hands open, tilt LEFT | Brake + steer left | ↓ + ← |
-| 🖐 Both hands open, tilt RIGHT | Brake + steer right | ↓ + → |
-| 👊🖐 One fist, one open | Neutral (no throttle) | — |
-| No hands visible | All keys released | — |
-
-> **Tip:** You can steer left/right in any mode — braking and steering work at the same time.
+The goal is simple: explore how computer vision can bridge the gap between human movement and interactive control systems — without needing a physical steering wheel.
 
 ---
 
-## Requirements
+## ⚡ The Idea
 
-- Python 3.9+
+What if you could steer a racing game using nothing but your hands and a webcam?
+
+Virtual Racing Wheel explores that idea through real-time hand tracking, steering-angle estimation, gesture recognition, and keyboard input simulation.
+
+Instead of relying on a physical controller, the system interprets your movements and maps them to familiar racing controls.
+
+## 🎮 Controls
+
+| Hand movement | Input | Action |
+|---|---|---|
+| Turn the steering wheel left | `A` | Steer left |
+| Turn the steering wheel right | `D` | Steer right |
+| Close your right hand into a fist | `W` | Accelerate |
+| Open your right hand | `S` | Brake |
+| Press `C` | — | Recalibrate neutral steering |
+| Press `Q` or `Esc` | — | Exit the application |
+
+*Controls depend on successful hand detection and calibration. Keyboard inputs are simulated by the application.*
+
+---
+
+## 🧠 How It Works
+
+The application connects several components into one interactive pipeline.
+
+1. **Video capture** — OpenCV reads frames from the webcam.
+2. **Hand tracking** — MediaPipe detects hand landmarks in the video stream.
+3. **Steering estimation** — The program estimates steering direction relative to a calibrated neutral position.
+4. **Gesture recognition** — Hand landmarks are used to distinguish acceleration and braking gestures.
+5. **Input mapping** — Python keyboard-control functionality translates the detected actions into game inputs.
+6. **Visual feedback** — An on-screen dashboard communicates steering state and application status.
+
+The result is a real-time control loop connecting physical movement to digital input.
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Application logic and control system |
+| OpenCV | Webcam access and image processing |
+| MediaPipe | Real-time hand landmark detection |
+| NumPy | Numerical operations |
+| pynput | Keyboard input simulation |
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+
+- Windows PC
+- Python 3.11
 - Webcam
+- Git
+- A racing game that accepts keyboard controls
 
----
-
-## Install Dependencies
-
-```bash
-pip install mediapipe opencv-python pynput numpy
-```
-
----
-
-## Run
+### 2. Clone the repository
 
 ```bash
-python3 steering_wheel.py
+git clone https://github.com/HeamakeshBajina/virtual-racing-wheel.git
+cd virtual-racing-wheel
 ```
 
-Press **Q** in the camera window to quit.
+### 3. Create a virtual environment
 
-### Live dashboard
+**Windows PowerShell:**
 
-The camera window includes a compact dark dashboard for tracking status, steering direction and strength, throttle state, hand gestures, and FPS. The visual refresh stays inside the existing OpenCV window—no new UI framework or extra dependencies.
-
----
-
-## macOS Setup ⚠️
-
-This project was built and tested on **macOS (Apple M2)**. On macOS you must grant camera permission to Terminal before running:
-
-1. Go to **System Settings → Privacy & Security → Camera**
-2. Enable access for **Terminal** (or your Python launcher)
-3. Run the script again
-
----
-
-## Windows Setup
-
-The script works on Windows with **one small change**. Open `steering_wheel.py` and find this line:
-
-```python
-backend = cv2.CAP_AVFOUNDATION if platform.system() == "Darwin" else cv2.CAP_ANY
+```powershell
+py -3.11 -m venv .venv311
+.\.venv311\Scripts\python.exe -m pip install --upgrade pip
 ```
 
-This line already auto-detects your OS — **no manual change needed**. On Windows it will automatically use `cv2.CAP_ANY` (DirectShow/MSMF).
+### 4. Install dependencies
 
-**Steps for Windows:**
+```powershell
+.\.venv311\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-1. Install Python from https://python.org
+### 5. Launch the controller
 
-2. Install dependencies:
-   ```bash
-   pip install mediapipe opencv-python pynput numpy
-   ```
+```powershell
+.\.venv311\Scripts\python.exe .\steering_wheel.py
+```
 
-3. Run:
-   ```bash
-   python steering_wheel.py
-   ```
+### 6. Calibrate and play
 
-4. If the camera doesn't open, try changing `CAMERA_INDEX` at the top of `steering_wheel.py`:
-   ```python
-   CAMERA_INDEX = 0   # try 0, 1, or 2
-   ```
+- Position your hands where the webcam can see them clearly.
+- Allow the steering calibration to complete.
+- Keep your neutral hand position steady during calibration.
+- Test the controls before entering a race.
+- Use `C` to recalibrate when needed.
+- Use `Q` or `Esc` to exit.
 
-> **Note for Windows:** You may see a Windows Security prompt asking if Python can access your camera — click **Allow**.
-
----
-
-## Config (top of `steering_wheel.py`)
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `CAMERA_INDEX` | `0` | `0` = built-in webcam, `1` = external USB camera |
-| `DEAD_ZONE_DEG` | `12` | Degrees of tilt to ignore at center (prevents jitter) |
-| `FLIP_CAMERA` | `True` | Mirror the feed (selfie view). Set `False` for some external cameras |
-| `GRACE_FRAMES` | `8` | Frames to wait before releasing keys when hands disappear |
-| `OPEN_FINGER_THRESH` | `3` | How many fingers must be extended to count as an open hand (brake) |
+**Tip:** Good lighting, a clear camera view, and stable hand visibility can improve tracking reliability.
 
 ---
 
-## Troubleshooting
+## 🔧 Engineering Challenges
 
-| Problem | Fix |
-|---------|-----|
-| `[ERROR] Cannot open camera` | Check `CAMERA_INDEX` — try `0`, `1`, `2` |
-| Steering is reversed | Toggle `FLIP_CAMERA = False` in config |
-| Keys stuck after removing hands | Hands must be fully out of frame for ~8 frames |
-| Brake not triggering | Spread all fingers wider, ensure 3+ fingers are fully extended |
-| Brake triggers too easily | Increase `OPEN_FINGER_THRESH = 4` in config |
-| Low FPS / laggy | Lower camera resolution in the script or close other apps |
+A webcam controller is more than a hand-tracking demo. It must turn imperfect visual measurements into stable, responsive input.
+
+The main engineering challenges include:
+
+- **Steering stability:** Reducing unintended direction changes caused by small hand movements.
+- **Responsiveness:** Reacting quickly when the steering direction reverses.
+- **Calibration:** Establishing a neutral reference position for steering.
+- **Gesture recognition:** Distinguishing acceleration and braking gestures reliably.
+- **Input safety:** Releasing simulated keys when tracking is lost or the application exits.
+- **Latency:** Minimizing the delay between a physical movement and its corresponding game input.
+
+These challenges guide the ongoing development of the project.
 
 ---
 
-## Works With Any Game That Uses Arrow Keys
+## 🗺️ Development Roadmap
 
-- Google Chrome Dinosaur game
-- Trackmania
-- TORCS
-- Hill Climb Racing (browser)
-- Any browser/PC racing game using arrow keys
+This is an actively evolving project. Planned improvements will be added as they are implemented and tested.
+
+- [x] Webcam-based hand tracking
+- [x] Neutral steering calibration
+- [x] Keyboard-based steering and throttle controls
+- [x] On-screen steering interface
+- [ ] More robust tracking-loss recovery
+- [ ] Adjustable steering sensitivity and dead zones
+- [ ] Improved gesture recognition across different hand positions
+- [ ] Performance and latency measurements
+- [ ] Repeatable testing under different lighting conditions
+- [ ] Documented experiments comparing control stability across versions
+
+The roadmap distinguishes current functionality from future work; completed items will be refined as testing continues.
+
+---
+
+## 🔬 What Comes Next?
+
+The next stage is to make the controller more measurable, not just more feature-rich.
+
+Future iterations can evaluate questions such as:
+
+- How quickly does the controller respond to a change in steering direction?
+- How much does the steering signal fluctuate when the hands remain still?
+- How reliably are controls released when a hand leaves the camera frame?
+- Which sensitivity and filtering settings produce the best balance between stability and responsiveness?
+
+The objective is to improve the system through repeatable experiments and documented iterations.
+
+---
+
+## 📁 Project Structure
+
+```text
+virtual-racing-wheel/
+├── steering_wheel.py
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
+
+---
+
+## 🤝 Contributing and Feedback
+
+Ideas, bug reports, and suggestions for improving tracking stability, control responsiveness, and usability are welcome.
+
+If you encounter an issue, include your operating system, Python version, relevant error messages, and the steps needed to reproduce it. Please avoid sharing private information or unnecessary camera footage.
+
+---
+
+## 👨‍💻 About the Project
+
+Virtual Racing Wheel is an independent engineering and software project exploring the intersection of computer vision, human-computer interaction, and real-time control.
+
+It is being developed iteratively, with an emphasis on understanding the underlying system, testing improvements, and documenting the engineering process.
+
+**Built with Python. Driven by vision. Improved through iteration.**
